@@ -1,217 +1,6 @@
 
 #include "pixel_art_demo.h"
 
-inline procedural_model DemoPushQuad()
-{
-    procedural_model Result = {};
-    
-    // IMPORTANT: Its assumed this is happening during a transfer operation
-    {
-        f32 Vertices[] = 
-            {
-                -0.5, -0.5, 0,   0, 0, 1,   0, 0,
-                0.5, -0.5, 0,   0, 0, 1,   1, 0,
-                0.5,  0.5, 0,   0, 0, 1,   1, 1,
-                -0.5,  0.5, 0,   0, 0, 1,   0, 1,
-            };
-
-        Result.Vertices = VkBufferCreate(RenderState->Device, &RenderState->GpuArena,
-                                         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                         sizeof(Vertices));
-        u8* GpuMemory = VkTransferPushWriteArray(&RenderState->TransferManager, Result.Vertices, u8, sizeof(Vertices),
-                                                 BarrierMask(VkAccessFlagBits(0), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT),
-                                                 BarrierMask(VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT));
-        Copy(Vertices, GpuMemory, sizeof(Vertices));
-    }
-            
-    {
-        u32 Indices[] =
-            {
-                0, 1, 2,
-                2, 3, 0,
-            };
-
-        Result.NumIndices = ArrayCount(Indices);
-        Result.Indices = VkBufferCreate(RenderState->Device, &RenderState->GpuArena,
-                                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                        sizeof(Indices));
-        u8* GpuMemory = VkTransferPushWriteArray(&RenderState->TransferManager, Result.Indices, u8, sizeof(Indices),
-                                                 BarrierMask(VkAccessFlagBits(0), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT),
-                                                 BarrierMask(VK_ACCESS_INDEX_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT));
-        Copy(Indices, GpuMemory, sizeof(Indices));
-    }
-
-    return Result;
-}
-
-inline procedural_model DemoPushCube()
-{
-    procedural_model Result = {};
-        
-    // IMPORTANT: Its assumed this is happening during a transfer operation
-    {
-        f32 Vertices[] = 
-            {
-                // NOTE: Front face
-                -0.5, -0.5, 0.5,
-                0.5, -0.5, 0.5,
-                0.5, 0.5, 0.5,
-                -0.5, 0.5, 0.5,
-
-                // NOTE: Back face
-                -0.5, -0.5, -0.5,
-                0.5, -0.5, -0.5,
-                0.5, 0.5, -0.5,
-                -0.5, 0.5, -0.5,
-
-                // NOTE: Left face
-                -0.5, -0.5, -0.5,
-                -0.5, 0.5, -0.5,
-                -0.5, 0.5, 0.5,
-                -0.5, -0.5, 0.5,
-
-                // NOTE: Right face
-                0.5, -0.5, -0.5,
-                0.5, 0.5, -0.5,
-                0.5, 0.5, 0.5,
-                0.5, -0.5, 0.5,
-
-                // NOTE: Top face
-                -0.5, 0.5, -0.5,
-                0.5, 0.5, -0.5,
-                0.5, 0.5, 0.5,
-                -0.5, 0.5, 0.5,
-
-                // NOTE: Bottom face
-                -0.5, -0.5, -0.5,
-                0.5, -0.5, -0.5,
-                0.5, -0.5, 0.5,
-                -0.5, -0.5, 0.5,
-            };
-
-        Result.Vertices = VkBufferCreate(RenderState->Device, &RenderState->GpuArena,
-                                         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                         sizeof(Vertices));
-        u8* GpuMemory = VkTransferPushWriteArray(&RenderState->TransferManager, Result.Vertices, u8, sizeof(Vertices),
-                                                 BarrierMask(VkAccessFlagBits(0), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT),
-                                                 BarrierMask(VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT));
-        Copy(Vertices, GpuMemory, sizeof(Vertices));
-    }
-            
-    {
-        u32 Indices[] =
-            {
-                // NOTE: Front face
-                0, 1, 2,
-                2, 3, 0,
-
-                // NOTE: Back face
-                4, 5, 6,
-                6, 7, 4,
-
-                // NOTE: Left face
-                8, 9, 10,
-                10, 11, 8,
-
-                // NOTE: Right face
-                12, 13, 14,
-                14, 15, 12,
-
-                // NOTE: Top face
-                16, 17, 18,
-                18, 19, 16,
-
-                // NOTE: Bottom face
-                20, 21, 22,
-                22, 23, 20,
-            };
-
-        Result.NumIndices = ArrayCount(Indices);
-        Result.Indices = VkBufferCreate(RenderState->Device, &RenderState->GpuArena,
-                                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                        sizeof(Indices));
-        u8* GpuMemory = VkTransferPushWriteArray(&RenderState->TransferManager, Result.Indices, u8, sizeof(Indices),
-                                                 BarrierMask(VkAccessFlagBits(0), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT),
-                                                 BarrierMask(VK_ACCESS_INDEX_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT));
-        Copy(Indices, GpuMemory, sizeof(Indices));
-    }
-
-    return Result;
-}
-
-inline procedural_model DemoStatePushSphere(i32 NumXSegments, i32 NumYSegments)
-{
-    procedural_model Result = {};
-    
-    i32 VerticesSize = (NumXSegments + 1)*(NumYSegments + 1)*(2*sizeof(v3) + sizeof(v2));
-
-    // NOTE: https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/1.1.lighting/lighting.cpp
-    Result.Vertices = VkBufferCreate(RenderState->Device, &RenderState->GpuArena,
-                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VerticesSize);
-    f32* Vertices = (f32*)VkTransferPushWrite(&RenderState->TransferManager, Result.Vertices, VerticesSize,
-                                              BarrierMask(VkAccessFlagBits(0), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT),
-                                              BarrierMask(VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT));
-
-    for (i32 Y = 0; Y <= NumYSegments; ++Y)
-    {
-        for (i32 X = 0; X <= NumXSegments; ++X)
-        {
-            v2 Segment = V2(X, Y) / V2(NumXSegments, NumYSegments);
-            v3 Pos = V3(Cos(Segment.x * 2.0f * Pi32) * Sin(Segment.y * Pi32),
-                        Cos(Segment.y * Pi32),
-                        Sin(Segment.x * 2.0f * Pi32) * Sin(Segment.y * Pi32));
-
-            // NOTE: Write position
-            *Vertices++ = Pos.x;
-            *Vertices++ = Pos.y;
-            *Vertices++ = Pos.z;
-
-            // NOTE: Write normal
-            *Vertices++ = Pos.x;
-            *Vertices++ = Pos.y;
-            *Vertices++ = Pos.z;
-
-            // NOTE: Write uv
-            *Vertices++ = Segment.x;
-            *Vertices++ = Segment.y;
-        }
-    }
-
-    Result.NumIndices = 2*NumYSegments*(NumXSegments + 1);
-    Result.Indices = VkBufferCreate(RenderState->Device, &RenderState->GpuArena,
-                                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                    Result.NumIndices*sizeof(u32));
-    u16* Indices = VkTransferPushWriteArray(&RenderState->TransferManager, Result.Indices, u16, Result.NumIndices,
-                                            BarrierMask(VkAccessFlagBits(0), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT),
-                                            BarrierMask(VK_ACCESS_INDEX_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT));
-
-    b32 OddRow = false;
-    u16* CurrIndex = Indices;
-    for (i32 Y = 0; Y < NumYSegments; ++Y)
-    {
-        if (!OddRow)
-        {
-            for (i32 X = 0; X <= NumXSegments; ++X)
-            {
-                *CurrIndex++ = u16(Y * (NumXSegments + 1) + X);
-                *CurrIndex++ = u16((Y+1) * (NumXSegments + 1) + X);
-            }
-        }
-        else
-        {
-            for (i32 X = NumXSegments; X >= 0; --X)
-            {
-                *CurrIndex++ = u16((Y+1) * (NumXSegments + 1) + X);
-                *CurrIndex++ = u16(Y * (NumXSegments + 1) + X);
-            }
-        }
-
-        OddRow = !OddRow;
-    }
-
-    return Result;
-}
-
 inline void DemoAllocGlobals(linear_arena* Arena)
 {
     // IMPORTANT: These are always the top of the program memory
@@ -270,6 +59,9 @@ DEMO_INIT(Init)
     DemoState->LinearSampler = VkSamplerCreate(RenderState->Device, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 0.0f);
         
     // NOTE: Init render target entries
+    DemoState->ColorEntry = RenderTargetEntryCreate(&RenderState->GpuArena, RenderState->WindowWidth, RenderState->WindowHeight,
+                                                    VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                    VK_IMAGE_ASPECT_COLOR_BIT);
     DemoState->SwapChainEntry = RenderTargetSwapChainEntryCreate(RenderState->WindowWidth, RenderState->WindowHeight,
                                                                RenderState->SwapChainFormat);
     DemoState->DepthEntry = RenderTargetEntryCreate(&RenderState->GpuArena, RenderState->WindowWidth, RenderState->WindowHeight,
@@ -280,14 +72,14 @@ DEMO_INIT(Init)
     {
         render_target_builder Builder = RenderTargetBuilderBegin(&DemoState->Arena, &DemoState->TempArena, RenderState->WindowWidth,
                                                                  RenderState->WindowHeight);
-        RenderTargetAddTarget(&Builder, &DemoState->SwapChainEntry, VkClearColorCreate(0, 0, 0, 1));
+        RenderTargetAddTarget(&Builder, &DemoState->ColorEntry, VkClearColorCreate(0, 0, 0, 1));
         RenderTargetAddTarget(&Builder, &DemoState->DepthEntry, VkClearDepthStencilCreate(1, 0));
                             
         vk_render_pass_builder RpBuilder = VkRenderPassBuilderBegin(&DemoState->TempArena);
 
-        u32 ColorId = VkRenderPassAttachmentAdd(&RpBuilder, DemoState->SwapChainEntry.Format, VK_ATTACHMENT_LOAD_OP_CLEAR,
+        u32 ColorId = VkRenderPassAttachmentAdd(&RpBuilder, DemoState->ColorEntry.Format, VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                 VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_UNDEFINED,
-                                                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         u32 DepthId = VkRenderPassAttachmentAdd(&RpBuilder, DemoState->DepthEntry.Format, VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                 VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_UNDEFINED,
                                                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -298,6 +90,39 @@ DEMO_INIT(Init)
         VkRenderPassSubPassEnd(&RpBuilder);
 
         DemoState->GeometryRenderTarget = RenderTargetBuilderEnd(&Builder, VkRenderPassBuilderEnd(&RpBuilder, RenderState->Device));
+    }
+
+    // NOTE: Copy To Swap
+    {
+        {
+            vk_descriptor_layout_builder Builder = VkDescriptorLayoutBegin(&DemoState->CopyToSwapDescLayout);
+            VkDescriptorLayoutAdd(&Builder, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+            VkDescriptorLayoutEnd(RenderState->Device, &Builder);
+        }
+
+        {
+            DemoState->CopyToSwapDescriptor = VkDescriptorSetAllocate(RenderState->Device, RenderState->DescriptorPool, DemoState->CopyToSwapDescLayout);
+            VkDescriptorImageWrite(&RenderState->DescriptorManager, DemoState->CopyToSwapDescriptor, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                   DemoState->ColorEntry.View, DemoState->LinearSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+        
+        render_target_builder Builder = RenderTargetBuilderBegin(&DemoState->Arena, &DemoState->TempArena, RenderState->WindowWidth,
+                                                                 RenderState->WindowHeight);
+        RenderTargetAddTarget(&Builder, &DemoState->SwapChainEntry, VkClearColorCreate(0, 0, 0, 1));
+        
+        vk_render_pass_builder RpBuilder = VkRenderPassBuilderBegin(&DemoState->TempArena);
+
+        u32 ColorId = VkRenderPassAttachmentAdd(&RpBuilder, RenderState->SwapChainFormat, VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                                VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_UNDEFINED,
+                                                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+        VkRenderPassSubPassBegin(&RpBuilder, VK_PIPELINE_BIND_POINT_GRAPHICS);
+        VkRenderPassColorRefAdd(&RpBuilder, ColorId, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        VkRenderPassSubPassEnd(&RpBuilder);
+
+        DemoState->CopyToSwapTarget = RenderTargetBuilderEnd(&Builder, VkRenderPassBuilderEnd(&RpBuilder, RenderState->Device));
+        DemoState->CopyToSwapPass = FullScreenPassCreate("shader_copy_to_swap_frag.spv", "main", &DemoState->CopyToSwapTarget, 1,
+                                                         &DemoState->CopyToSwapDescLayout, 1, &DemoState->CopyToSwapDescriptor);
     }
 
     // NOTE: Pixel Art Sprite PSO
@@ -315,14 +140,14 @@ DEMO_INIT(Init)
             vk_pipeline_builder Builder = VkPipelineBuilderBegin(&DemoState->TempArena);
 
             // NOTE: Shaders
-            VkPipelineVertexShaderAdd(&Builder, "sprite_model_vert.spv", "main");
-            VkPipelineFragmentShaderAdd(&Builder, "sprite_model_frag.spv", "main");
+            VkPipelineShaderAdd(&Builder, "sprite_model_vert.spv", "main", VK_SHADER_STAGE_VERTEX_BIT);
+            VkPipelineShaderAdd(&Builder, "sprite_model_frag.spv", "main", VK_SHADER_STAGE_FRAGMENT_BIT);
                 
             // NOTE: Specify input vertex data format
             VkPipelineVertexBindingBegin(&Builder);
             VkPipelineVertexAttributeAdd(&Builder, VK_FORMAT_R32G32B32_SFLOAT, sizeof(v3));
             VkPipelineVertexAttributeAddOffset(&Builder, sizeof(v3));
-            VkPipelineVertexAttributeAdd(&Builder, VK_FORMAT_R32G32B32_SFLOAT, sizeof(v2));
+            VkPipelineVertexAttributeAdd(&Builder, VK_FORMAT_R32G32_SFLOAT, sizeof(v2));
             VkPipelineVertexBindingEnd(&Builder);
 
             VkPipelineInputAssemblyAdd(&Builder, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE);
@@ -366,9 +191,7 @@ DEMO_INIT(Init)
     VkCommandsBegin(RenderState->Device, Commands);
     {
         // NOTE: Push geometry
-        DemoState->Quad = DemoPushQuad();
-        DemoState->Cube = DemoPushCube();
-        DemoState->Sphere = DemoStatePushSphere(64, 64);
+        DemoState->Quad = AssetsPushQuad();
         
         // NOTE: Push pixel art sprite
         DemoState->NeonCatTexture = TextureLoad("textures\\neon_cat.png", VK_FORMAT_R8G8B8A8_UNORM, false, sizeof(u8), 4);
@@ -427,7 +250,7 @@ DEMO_MAIN_LOOP(MainLoop)
     // NOTE: Update pipelines
     VkPipelineUpdateShaders(RenderState->Device, &RenderState->CpuArena, &RenderState->PipelineManager);
 
-    RenderTargetUpdateEntries(&DemoState->Arena, &DemoState->GeometryRenderTarget);
+    RenderTargetUpdateEntries(&DemoState->Arena, &DemoState->CopyToSwapTarget);
 
     // NOTE: Update instances
     {
@@ -453,6 +276,8 @@ DEMO_MAIN_LOOP(MainLoop)
             {
                 T = 0.0f;
             }
+
+            OffsetPos = V3(0);
             
             for (u32 InstanceId = 0; InstanceId < DemoState->NumInstances; ++InstanceId, ++Data)
             {
@@ -471,9 +296,8 @@ DEMO_MAIN_LOOP(MainLoop)
         VkTransferManagerFlush(&RenderState->TransferManager, RenderState->Device, RenderState->Commands.Buffer, &RenderState->BarrierManager);
     }
 
-    RenderTargetRenderPassBegin(&DemoState->GeometryRenderTarget, Commands, RenderTargetRenderPass_SetViewPort | RenderTargetRenderPass_SetScissor);
-    
     // NOTE: Draw PBR Textures
+    RenderTargetRenderPassBegin(&DemoState->GeometryRenderTarget, Commands, RenderTargetRenderPass_SetViewPort | RenderTargetRenderPass_SetScissor);
     {
         vkCmdBindPipeline(Commands.Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, DemoState->PixelArtSpritePso->Handle);
         VkDescriptorSet DescriptorSets[] =
@@ -489,8 +313,10 @@ DEMO_MAIN_LOOP(MainLoop)
         vkCmdBindIndexBuffer(Commands.Buffer, DemoState->Quad.Indices, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(Commands.Buffer, DemoState->Quad.NumIndices, DemoState->NumInstances, 0, 0, 0);
     }
+    RenderTargetRenderPassEnd(Commands);
     
-    RenderTargetRenderPassEnd(Commands);        
+    FullScreenPassRender(Commands, &DemoState->CopyToSwapPass);
+
     VkCheckResult(vkEndCommandBuffer(Commands.Buffer));
                     
     // NOTE: Render to our window surface

@@ -33,12 +33,14 @@ layout(location = 0) out vec4 OutColor;
 
 vec2 ConvertToTexels(vec2 Uv)
 {
-    vec2 Result = Uv * vec2(textureSize(ColorTexture, 0)) - vec2(0.5);
+    vec2 TextureSize = textureSize(ColorTexture, 0);
+    vec2 Result = Uv * TextureSize;
     return Result;
 }
 
 vec2 ConvertToUv(vec2 Texels)
 {
+    // NOTE: The bias of 0.5 is because tahts where the texel centers are in uv
     vec2 Result = (Texels + vec2(0.5)) / vec2(textureSize(ColorTexture, 0));
     return Result;
 }
@@ -81,38 +83,35 @@ void main()
 
               f32 
 
-        TODO: Fails when we rotate
         TODO: Implement without the if statement
-        TODO: Why does the derivative appear to be incorrect for some rotations? It just goes out empty for dFdxFine and dFdyFine
+        TODO: Add mip levels for scaling
               
      */
 
-    vec2 Test = dFdyFine(InUv);
+    //
+    // NOTE: Slow but more readable version
+    //
+    vec2 DUv = dFdx(InUv) + dFdy(InUv);
     
-    //vec2 DUv = vec2(dFdx(InUv.x), dFdy(InUv.y)); // NOTE: Works for no rotation
-    vec2 DUv = dFdx(InUv)  + dFdy(InUv);
-    
-    // TODO: Right now we assume everything is sized well so we don't need mip levels
     vec2 LeftUv = InUv - 0.5*DUv;
     vec2 RightUv = InUv + 0.5*DUv;
 
-    // NOTE: The bias of -0.5 is because tahts where the texel centers are but we are working in whole texel centers
     vec2 LeftTexel = ConvertToTexels(LeftUv);
     vec2 RightTexel = ConvertToTexels(RightUv);
 
     uvec2 LeftTexelAbsolute = uvec2(floor(LeftTexel));
     uvec2 RightTexelAbsolute = uvec2(floor(RightTexel));
-
+    
     vec2 OutUv = vec2(0, 0);
+
     if (LeftTexelAbsolute.x == RightTexelAbsolute.x)
     {
         OutUv.x = LeftTexelAbsolute.x;
     }
     else
     {
-        float a = (ceil(LeftTexel.x) - LeftTexel.x) / (RightTexel.x - LeftTexel.x);
-        // NOTE: We can lerp the uv and avoid conversion
-        // TODO: Why is it 1-a and not just a?
+        float a = (round(LeftTexel.x) - LeftTexel.x) / (RightTexel.x - LeftTexel.x);
+        // TODO: Why is it 1-a and not just a? Its probably because we got coverage but want alpha which is inverse
         OutUv.x = mix(float(LeftTexelAbsolute.x), float(RightTexelAbsolute.x), 1-a);
     }
 
@@ -122,16 +121,14 @@ void main()
     }
     else
     {
-        float a = (ceil(LeftTexel.y) - LeftTexel.y) / (RightTexel.y - LeftTexel.y);
-        // NOTE: We can lerp the uv and avoid conversion
+        float a = (round(LeftTexel.y) - LeftTexel.y) / (RightTexel.y - LeftTexel.y);
         OutUv.y = mix(float(LeftTexelAbsolute.y), float(RightTexelAbsolute.y), 1-a);
     }
     
     OutUv = ConvertToUv(OutUv);
     vec4 TextureColor = texture(ColorTexture, OutUv);
     OutColor = TextureColor;
-    OutColor = vec4(1000000.0*Test, 0, 1);
-    //OutColor = vec4(InUv, 0, 1);
+    
 }
 
 #endif

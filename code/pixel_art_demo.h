@@ -22,13 +22,6 @@
   
  */
 
-struct procedural_model
-{
-    u32 NumIndices;
-    VkBuffer Vertices;
-    VkBuffer Indices;
-};
-
 struct demo_state
 {
     linear_arena Arena;
@@ -39,14 +32,18 @@ struct demo_state
     VkSampler LinearSampler;
     
     // NOTE: Render Target Entries
-    render_target_entry SwapChainEntry;
+    render_target_entry ColorEntry;
     render_target_entry DepthEntry;
     render_target GeometryRenderTarget;
+
+    render_target_entry SwapChainEntry;
+    render_target CopyToSwapTarget;
+    render_fullscreen_pass CopyToSwapPass;
+    VkDescriptorSetLayout CopyToSwapDescLayout;
+    VkDescriptorSet CopyToSwapDescriptor;
     
     // NOTE: Models
-    procedural_model Quad;
-    procedural_model Cube;
-    procedural_model Sphere;
+    procedural_mesh Quad;
 
     // NOTE: Pixel Art Sprite Data
     u32 NumInstances;

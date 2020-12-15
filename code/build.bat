@@ -25,6 +25,8 @@ REM USING GLSL IN VK USING GLSLANGVALIDATOR
 call glslangValidator -DVERTEX_SHADER=1 -S vert -e main -g -V -o %DataDir%\sprite_model_vert.spv %CodeDir%\shader_sprite_model.cpp
 call glslangValidator -DFRAGMENT_SHADER=1 -S frag -e main -g -V -o %DataDir%\sprite_model_frag.spv %CodeDir%\shader_sprite_model.cpp
 
+call glslangValidator -DFRAGMENT_SHADER=1 -S frag -e main -g -V -o %DataDir%\shader_copy_to_swap_frag.spv %CodeDir%\shader_copy_to_swap.cpp
+
 REM USING HLSL IN VK USING DXC
 REM set DxcDir=C:\Tools\DirectXShaderCompiler\build\Debug\bin
 REM %DxcDir%\dxc.exe -spirv -T cs_6_0 -E main -fspv-target-env=vulkan1.1 -Fo ..\data\write_cs.o -Fh ..\data\write_cs.o.txt ..\code\bw_write_shader.cpp

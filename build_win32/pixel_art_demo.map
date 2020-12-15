@@ -1,6 +1,6 @@
  pixel_art_demo
 
- Timestamp is 5fc1d820 (Fri Nov 27 23:54:56 2020)
+ Timestamp is 5fd8f93c (Tue Dec 15 12:58:20 2020)
 
  Preferred load address is 0000000140000000
 
@@ -27,11 +27,11 @@
  0002:00000388 00000000H .gfids$y                DATA
  0002:00000390 00010750H .rdata                  DATA
  0002:00010ae0 0000016cH .rdata$r                DATA
- 0002:00010c4c 00000324H .rdata$zzzdbg           DATA
- 0002:00010f70 00000008H .rtc$IAA                DATA
- 0002:00010f78 00000008H .rtc$IZZ                DATA
- 0002:00010f80 00000008H .rtc$TAA                DATA
- 0002:00010f88 00000008H .rtc$TZZ                DATA
+ 0002:00010c4c 0000031cH .rdata$zzzdbg           DATA
+ 0002:00010f68 00000008H .rtc$IAA                DATA
+ 0002:00010f70 00000008H .rtc$IZZ                DATA
+ 0002:00010f78 00000008H .rtc$TAA                DATA
+ 0002:00010f80 00000010H .rtc$TZZ                DATA
  0002:00010f90 00001090H .xdata                  DATA
  0002:00012020 00000084H .xdata$x                DATA
  0002:000120a4 00000000H .edata                  DATA
@@ -2184,10 +2184,10 @@
  0002:00010c00       ??_R3type_info@@8          000000014004ac00     LIBCMTD:std_type_info_static.obj
  0002:00010c18       ??_R2type_info@@8          000000014004ac18     LIBCMTD:std_type_info_static.obj
  0002:00010c28       ??_R1A@?0A@EA@type_info@@8 000000014004ac28     LIBCMTD:std_type_info_static.obj
- 0002:00010f70       __rtc_iaa                  000000014004af70     LIBCMTD:initsect.obj
- 0002:00010f78       __rtc_izz                  000000014004af78     LIBCMTD:initsect.obj
- 0002:00010f80       __rtc_taa                  000000014004af80     LIBCMTD:initsect.obj
- 0002:00010f88       __rtc_tzz                  000000014004af88     LIBCMTD:initsect.obj
+ 0002:00010f68       __rtc_iaa                  000000014004af68     LIBCMTD:initsect.obj
+ 0002:00010f70       __rtc_izz                  000000014004af70     LIBCMTD:initsect.obj
+ 0002:00010f78       __rtc_taa                  000000014004af78     LIBCMTD:initsect.obj
+ 0002:00010f80       __rtc_tzz                  000000014004af80     LIBCMTD:initsect.obj
  0002:00012020       _TI2?AVbad_exception@std@@ 000000014004c020     libvcruntimed:frame.obj
  0002:00012040       _CTA2?AVbad_exception@std@@ 000000014004c040     libvcruntimed:frame.obj
  0002:00012058       _CT??_R0?AVbad_exception@std@@@8??0bad_exception@std@@QEAA@AEBV01@@Z24 000000014004c058     libvcruntimed:frame.obj
@@ -2887,12 +2887,12 @@
  0002:00000300       ?pre_cpp_initializer@@3P6AXXZEA 000000014003a300     LIBCMTD:exe_winmain.obj
  0002:00000318       ?pre_c_initializer@@3P6AHXZEA 000000014003a318     LIBCMTD:exe_winmain.obj
  0002:00000320       ?post_pgo_initializer@@3P6AHXZEA 000000014003a320     LIBCMTD:exe_winmain.obj
- 0002:00000390       $SG147385                  000000014003a390     win32_main.obj
- 0002:000003a0       $SG147387                  000000014003a3a0     win32_main.obj
- 0002:000003b0       $SG147389                  000000014003a3b0     win32_main.obj
- 0002:000003d8       $SG147390                  000000014003a3d8     win32_main.obj
- 0002:00000400       $SG147391                  000000014003a400     win32_main.obj
- 0002:00000418       $SG147392                  000000014003a418     win32_main.obj
+ 0002:00000390       $SG147461                  000000014003a390     win32_main.obj
+ 0002:000003a0       $SG147463                  000000014003a3a0     win32_main.obj
+ 0002:000003b0       $SG147465                  000000014003a3b0     win32_main.obj
+ 0002:000003d8       $SG147466                  000000014003a3d8     win32_main.obj
+ 0002:00000400       $SG147467                  000000014003a400     win32_main.obj
+ 0002:00000418       $SG147468                  000000014003a418     win32_main.obj
  0002:00000458       GS_ExceptionPointers       000000014003a458     LIBCMTD:gs_report.obj
  0002:000004c0       ?module_names@?A0xbfd18cd1@@3QBQEB_WB 000000014003a4c0     libvcruntimed:winapi_downlevel.obj
  0002:00000750       ?candidate_modules@?1??try_get_FlsAlloc@@YAP6AKP6AXPEAX@Z@ZXZ@4QBW4module_id@?A0xbfd18cd1@@B 000000014003a750     libvcruntimed:winapi_downlevel.obj
