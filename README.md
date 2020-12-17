@@ -7,6 +7,9 @@ Demonstrates a shader for rendering pixel art on higher resolution displays with
 - Add scaling support for pixel art via mip maps
 - Optimize the shader to not use branches
 
-# How To Build
+# How to Build
 
-Run build.bat in the code folder to generate a exe in the build folder. You can then create a visual studio project out of the exe and set the working directory to the data directory and run the application. 
+- clone with --recurse-submodules
+- add assimp to the lib folder or comment out all assimp references in the framework_vulkan code
+- Run code/build.bat (you can adjust the commands here for shaders and c++ code like O0 or O2). 
+- Open the exe in visual studio as a project and set the working directory to the data folder. You can use the sln for debugging the project.
