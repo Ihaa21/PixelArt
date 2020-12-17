@@ -12,8 +12,8 @@ set AssimpLibDir=%LibsDir%\assimp-5.0.1\lib\RelWithDebInfo
 set CommonCompilerFlags=-Od -MTd -nologo -fp:fast -fp:except- -EHsc -Gm- -GR- -EHa- -Zo -Oi -WX -W4 -wd4127 -wd4201 -wd4100 -wd4189 -wd4505 -Z7 -FC
 set CommonCompilerFlags=-I %VulkanIncludeDir% %CommonCompilerFlags%
 set CommonCompilerFlags=-I %LibsDir% -I %AssimpIncludeDir% %CommonCompilerFlags%
-REM Check the DLLs here
-set CommonLinkerFlags=-incremental:no -opt:ref user32.lib gdi32.lib Winmm.lib opengl32.lib DbgHelp.lib d3d12.lib dxgi.lib d3dcompiler.lib %AssimpLibDir%\assimp-vc142-mt.lib
+REM Check the DLLs here %AssimpLibDir%\assimp-vc142-mt.lib
+set CommonLinkerFlags=-incremental:no -opt:ref user32.lib gdi32.lib Winmm.lib opengl32.lib DbgHelp.lib d3d12.lib dxgi.lib d3dcompiler.lib 
 
 IF NOT EXIST %OutputDir% mkdir %OutputDir%
 
