@@ -7,9 +7,6 @@
 [submodule "libs/math"]
 	path = libs/math
 	url = https://github.com/Ihaa21/math.git
-[submodule "libs/string"]
-	path = libs/string
-	url = https://github.com/Ihaa21/string.git
 [submodule "libs/memory"]
 	path = libs/memory
 	url = https://github.com/Ihaa21/memory.git
