@@ -59,29 +59,11 @@ void main()
 
             The algorithm calculates the coverage of the multiple texel fragments for each texel that collides, and uses that to do
             blending that is correct in the case of fixed translations/scaling. In the case of rotation, this approximates the result
-            I think.
+            but isn't perfect I don't think due to the algorithm assuming we have rectangles for texels when really we have diamonds with
+            different coverage amounts. Overall it looks good under rotation with a little bit of aliasing.
 
-            We still use bilinear blending but we want to change the uv coordinates such that we achieve the math we want from above.
-
-      NOTE: Derivation:
-
-            Bilinear1d(t, C0, C1):
-            
-                (1 - t)*C0 + t*C1
-                
-            Bilinear2d(u, v, C0, C1, C2, C3): 
-
-                B0 = (1 - u)*C0 + u*C1
-                B1 = (1 - u)*C2 + u*C3
-                Result = (1 - v)*B0 + v*B1
-            
-            In the case that a fragment is entirely inside a fragment, we just want that texels color. We can do this via the following:
-
-              vec2 uv = ConverToUv(ConvertToPixels(uv) - fract(ConvertToPixels(uv)))
-
-            In the case that a fragment contains more than one texel, we first derive what happens in 1d:
-
-              f32 
+            When we have coverage values, we adjust the uv coordinates for sampling such that the percentage of our new uv from the nearby
+            texels matches the coverage values we calculated.
 
         TODO: Implement without the if statement
         TODO: Add mip levels for scaling
