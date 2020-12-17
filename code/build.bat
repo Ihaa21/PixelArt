@@ -33,7 +33,7 @@ REM %DxcDir%\dxc.exe -spirv -T cs_6_0 -E main -fspv-target-env=vulkan1.1 -Fo ..\
 
 REM 64-bit build
 echo WAITING FOR PDB > lock.tmp
-cl %CommonCompilerFlags% %CodeDir%\pixel_art_demo.cpp -Fmpixel_art_demo.map -LD /link %CommonLinkerFlags% -incremental:no -opt:ref -PDB:pixel_art_demo_%random%.pdb -EXPORT:Init -EXPORT:Destroy -EXPORT:CodeReload -EXPORT:MainLoop
+cl %CommonCompilerFlags% %CodeDir%\pixel_art_demo.cpp -Fmpixel_art_demo.map -LD /link %CommonLinkerFlags% -incremental:no -opt:ref -PDB:pixel_art_demo_%random%.pdb -EXPORT:Init -EXPORT:Destroy -EXPORT:SwapChainChange -EXPORT:CodeReload -EXPORT:MainLoop
 del lock.tmp
 call cl %CommonCompilerFlags% -DDLL_NAME=pixel_art_demo -Fepixel_art_demo.exe %LibsDir%\framework_vulkan\win32_main.cpp -Fmpixel_art_demo.map /link %CommonLinkerFlags%
 

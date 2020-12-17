@@ -1,5 +1,7 @@
 #pragma once
 
+#define VALIDATION
+
 #include "framework_vulkan\framework_vulkan.h"
 
 /*
@@ -26,6 +28,7 @@ struct demo_state
 {
     linear_arena Arena;
     linear_arena TempArena;
+    vk_linear_arena RenderTargetArena;
 
     // NOTE: Samplers
     VkSampler PointSampler;

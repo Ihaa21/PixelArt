@@ -8,6 +8,29 @@ inline void DemoAllocGlobals(linear_arena* Arena)
     RenderState = PushStruct(Arena, render_state);
 }
 
+inline void DemoRenderTargetsCreate()
+{
+    b32 ReCreate = DemoState->RenderTargetArena.Used != 0;
+    VkArenaClear(&DemoState->RenderTargetArena);
+
+    RenderTargetEntryReCreate(&DemoState->RenderTargetArena, RenderState->WindowWidth, RenderState->WindowHeight,
+                              VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                              VK_IMAGE_ASPECT_COLOR_BIT, &DemoState->ColorEntry);
+    RenderTargetEntryReCreate(&DemoState->RenderTargetArena, RenderState->WindowWidth, RenderState->WindowHeight,
+                              VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                              VK_IMAGE_ASPECT_DEPTH_BIT, &DemoState->DepthEntry);
+
+    VkDescriptorImageWrite(&RenderState->DescriptorManager, DemoState->CopyToSwapDescriptor, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                           DemoState->ColorEntry.View, DemoState->LinearSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    if (ReCreate)
+    {
+        RenderTargetUpdateEntries(&DemoState->Arena, &DemoState->GeometryRenderTarget);
+    }
+
+    VkDescriptorManagerFlush(RenderState->Device, &RenderState->DescriptorManager);
+}
+
 DEMO_INIT(Init)
 {
     // NOTE: Init Memory
@@ -59,14 +82,20 @@ DEMO_INIT(Init)
     DemoState->LinearSampler = VkSamplerCreate(RenderState->Device, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 0.0f);
         
     // NOTE: Init render target entries
-    DemoState->ColorEntry = RenderTargetEntryCreate(&RenderState->GpuArena, RenderState->WindowWidth, RenderState->WindowHeight,
-                                                    VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                                                    VK_IMAGE_ASPECT_COLOR_BIT);
+    u64 HeapSize = MegaBytes(64);
+    DemoState->RenderTargetArena = VkLinearArenaCreate(VkMemoryAllocate(RenderState->Device, RenderState->LocalMemoryId, HeapSize), HeapSize);
+
+    // NOTE: Copy To Swap Descriptor Set Layout
+    {
+        vk_descriptor_layout_builder Builder = VkDescriptorLayoutBegin(&DemoState->CopyToSwapDescLayout);
+        VkDescriptorLayoutAdd(&Builder, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        VkDescriptorLayoutEnd(RenderState->Device, &Builder);
+        DemoState->CopyToSwapDescriptor = VkDescriptorSetAllocate(RenderState->Device, RenderState->DescriptorPool, DemoState->CopyToSwapDescLayout);
+    }
+
+    DemoRenderTargetsCreate();
     DemoState->SwapChainEntry = RenderTargetSwapChainEntryCreate(RenderState->WindowWidth, RenderState->WindowHeight,
-                                                               RenderState->SwapChainFormat);
-    DemoState->DepthEntry = RenderTargetEntryCreate(&RenderState->GpuArena, RenderState->WindowWidth, RenderState->WindowHeight,
-                                                  VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
+                                                                 RenderState->SwapChainFormat);
 
     // NOTE: Geometry RT
     {
@@ -90,39 +119,6 @@ DEMO_INIT(Init)
         VkRenderPassSubPassEnd(&RpBuilder);
 
         DemoState->GeometryRenderTarget = RenderTargetBuilderEnd(&Builder, VkRenderPassBuilderEnd(&RpBuilder, RenderState->Device));
-    }
-
-    // NOTE: Copy To Swap
-    {
-        {
-            vk_descriptor_layout_builder Builder = VkDescriptorLayoutBegin(&DemoState->CopyToSwapDescLayout);
-            VkDescriptorLayoutAdd(&Builder, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-            VkDescriptorLayoutEnd(RenderState->Device, &Builder);
-        }
-
-        {
-            DemoState->CopyToSwapDescriptor = VkDescriptorSetAllocate(RenderState->Device, RenderState->DescriptorPool, DemoState->CopyToSwapDescLayout);
-            VkDescriptorImageWrite(&RenderState->DescriptorManager, DemoState->CopyToSwapDescriptor, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                   DemoState->ColorEntry.View, DemoState->LinearSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        }
-        
-        render_target_builder Builder = RenderTargetBuilderBegin(&DemoState->Arena, &DemoState->TempArena, RenderState->WindowWidth,
-                                                                 RenderState->WindowHeight);
-        RenderTargetAddTarget(&Builder, &DemoState->SwapChainEntry, VkClearColorCreate(0, 0, 0, 1));
-        
-        vk_render_pass_builder RpBuilder = VkRenderPassBuilderBegin(&DemoState->TempArena);
-
-        u32 ColorId = VkRenderPassAttachmentAdd(&RpBuilder, RenderState->SwapChainFormat, VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                                VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_UNDEFINED,
-                                                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-        VkRenderPassSubPassBegin(&RpBuilder, VK_PIPELINE_BIND_POINT_GRAPHICS);
-        VkRenderPassColorRefAdd(&RpBuilder, ColorId, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        VkRenderPassSubPassEnd(&RpBuilder);
-
-        DemoState->CopyToSwapTarget = RenderTargetBuilderEnd(&Builder, VkRenderPassBuilderEnd(&RpBuilder, RenderState->Device));
-        DemoState->CopyToSwapPass = FullScreenPassCreate("shader_copy_to_swap_frag.spv", "main", &DemoState->CopyToSwapTarget, 1,
-                                                         &DemoState->CopyToSwapDescLayout, 1, &DemoState->CopyToSwapDescriptor);
     }
 
     // NOTE: Pixel Art Sprite PSO
@@ -186,6 +182,28 @@ DEMO_INIT(Init)
                                                sizeof(m4)*DemoState->NumInstances);
     }
     
+    // TODO: Move to render.cpp, this gets used a lot
+    // NOTE: Copy To Swap
+    {
+        render_target_builder Builder = RenderTargetBuilderBegin(&DemoState->Arena, &DemoState->TempArena, RenderState->WindowWidth,
+                                                                 RenderState->WindowHeight);
+        RenderTargetAddTarget(&Builder, &DemoState->SwapChainEntry, VkClearColorCreate(0, 0, 0, 1));
+        
+        vk_render_pass_builder RpBuilder = VkRenderPassBuilderBegin(&DemoState->TempArena);
+
+        u32 ColorId = VkRenderPassAttachmentAdd(&RpBuilder, RenderState->SwapChainFormat, VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                                VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_UNDEFINED,
+                                                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+        VkRenderPassSubPassBegin(&RpBuilder, VK_PIPELINE_BIND_POINT_GRAPHICS);
+        VkRenderPassColorRefAdd(&RpBuilder, ColorId, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        VkRenderPassSubPassEnd(&RpBuilder);
+
+        DemoState->CopyToSwapTarget = RenderTargetBuilderEnd(&Builder, VkRenderPassBuilderEnd(&RpBuilder, RenderState->Device));
+        DemoState->CopyToSwapPass = FullScreenPassCreate("shader_copy_to_swap_frag.spv", "main", &DemoState->CopyToSwapTarget, 1,
+                                                         &DemoState->CopyToSwapDescLayout, 1, &DemoState->CopyToSwapDescriptor);
+    }
+
     // NOTE: Upload assets
     vk_commands Commands = RenderState->Commands;
     VkCommandsBegin(RenderState->Device, Commands);
@@ -222,6 +240,17 @@ DEMO_INIT(Init)
 
 DEMO_DESTROY(Destroy)
 {
+}
+
+DEMO_SWAPCHAIN_CHANGE(SwapChainChange)
+{
+    VkCheckResult(vkDeviceWaitIdle(RenderState->Device));
+    VkSwapChainReCreate(&DemoState->TempArena, WindowWidth, WindowHeight, RenderState->PresentMode);
+
+    DemoState->SwapChainEntry.Width = RenderState->WindowWidth;
+    DemoState->SwapChainEntry.Height = RenderState->WindowHeight;
+
+    DemoRenderTargetsCreate();
 }
 
 DEMO_CODE_RELOAD(CodeReload)
@@ -276,15 +305,13 @@ DEMO_MAIN_LOOP(MainLoop)
             {
                 T = 0.0f;
             }
-
-            OffsetPos = V3(0);
             
             for (u32 InstanceId = 0; InstanceId < DemoState->NumInstances; ++InstanceId, ++Data)
             {
                 f32 Scale = 3.0f*DemoState->Scales[InstanceId];
                 f32 Rotation = DemoState->Rotations[InstanceId];
 
-                Rotation = 2.0f*T; //Pi32/2.0f;
+                Rotation = 2.0f*T;
                 
                 *Data = {};
                 *Data = (M4Pos(DemoState->Positions[InstanceId] + OffsetPos)*
@@ -302,7 +329,6 @@ DEMO_MAIN_LOOP(MainLoop)
         vkCmdBindPipeline(Commands.Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, DemoState->PixelArtSpritePso->Handle);
         VkDescriptorSet DescriptorSets[] =
         {
-            //DemoState->PixelArtSpritePointSet,
             DemoState->PixelArtSpriteLinearSet,
         };
         vkCmdBindDescriptorSets(Commands.Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, DemoState->PixelArtSpritePso->Layout, 0,
