@@ -2,7 +2,7 @@
 
 set CodeDir=..\code
 set DataDir=..\data
-set LibsDir=D:\Code\Libs
+set LibsDir=..\libs
 set OutputDir=..\build_win32
 set VulkanIncludeDir="C:\VulkanSDK\1.2.135.0\Include\vulkan"
 set VulkanBinDir="C:\VulkanSDK\1.2.135.0\Bin"
